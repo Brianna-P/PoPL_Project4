@@ -115,33 +115,33 @@ stmt : assignment
 block : T_BEGIN stmt_list T_END
   ;
 
-construct_while :
-    T_WHILE
+
+construct_while : 
+    T_WHILE 
     {
-        // First semantic action: Store the next instruction entry in the parser's stack
-        @$.begin.line = INSTRUCTION_NEXT;
+      // First semantic action: Store the next instruction entry in the parser's stack
+      @$.begin.line = INSTRUCTION_NEXT;
     }
-    T_LPAR
-    l_expr
-    T_RPAR
+    T_LPAR 
+    l_expr 
+    T_RPAR 
     {
-        // Second semantic action: Jump to the end of the while body if the condition evaluates to zero
-        int jump_dst = INSTRUCTION_NEXT;
-        itab_instruction_add(itab, OP_JZ, $3->addr, UNUSED_ARG, jump_dst);
-        @$.begin.line = INSTRUCTION_LAST;
+      // Second semantic action: Jump to the end of the while body if the condition evaluates to zero.
+      int jump_dst = INSTRUCTION_NEXT;
+      itab_instruction_add (itab, OP_JZ, $4->addr, UNUSED_ARG, TBD_ARG);
+      @$.begin.line = INSTRUCTION_LAST;
     }
-    T_DO
+    T_DO 
     stmt
     {
-        // Third semantic action: Generate an unconditional jump to the first instruction of l_expr
-        int jump_dst = @2.begin.line;
-        itab_instruction_add(itab, OP_JMP, NOARG, NOARG, jump_dst);
-        // Set the destination jump that terminates the loop
-        int jmp_entry = @6.begin.line;
-        itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
+      // Third semantic action: Generate an unconditional jump to the first instruction of l_expr
+      int jump_dst = @2.begin.line;
+      itab_instruction_add (itab, OP_JMP, NOARG, NOARG, jump_dst);
+      // Set the destination jump that terminates the loop
+      int jmp_entry = @6.begin.line;
+      itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
     }
     ;
-
 
 construct_repeat :
     T_REPEAT
@@ -157,38 +157,37 @@ construct_repeat :
     {
         // Second semantic action: Retrieve the value stored in the stack in the first semantic action
         // and generate a jump-if-zero (OP_JZ) to the address stored in the first semantic action
-        int jump_dst = @1.begin.line;
-        itab_instruction_add(itab, OP_JZ, $5->addr, NOARG, jump_dst);
+        int jump_dst = @2.begin.line;
+        itab_instruction_add(itab, OP_JZ, $6->addr, NOARG, jump_dst);
     }
     ;
 
 
-
-
-
 construct_if :
-    T_IF 
-    T_LPAR 
-    l_expr 
-    T_RPAR 
+    T_IF
+    T_LPAR
+    l_expr
+    T_RPAR
+    stmt
     {
-        // First semantic action
-        itab_instruction_add (itab, OP_JZ, DEFINE_ME, NOARG, TBD_ARG);
-        @$.begin.line = INSTRUCTION_NEXT;
+        // First semantic action: Generate a jump-if-zero (OP_JZ) to the end of the if-then-else block
+        int jump_dst = INSTRUCTION_NEXT;
+        itab_instruction_add(itab, OP_JZ, NOARG, NOARG, TBD_ARG);
+        @$.begin.line = INSTRUCTION_LAST;
     }
-    stmt 
+    stmt
     {
-        // Second semantic action
-        itab_instruction_add (itab, OP_JMP, NOARG, NOARG, TBD_ARG);
-        @$.begin.line = INSTRUCTION_NEXT;
-
-        int jmp_entry = @4.begin.line;
+        // Second semantic action: Generate an unconditional jump to the end of the if-then-else block
+        int jump_dst = INSTRUCTION_NEXT;
+        itab_instruction_add(itab, OP_JMP, NOARG, NOARG, TBD_ARG);
+        // Set the destination jump that terminates the if-then-else block
+        int jmp_entry = @6.begin.line;
         itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
     }
     construct_else
     {
-        // Third semantic action
-        int jmp_entry = @6.begin.line;
+        // Third semantic action: Set the destination jump that terminates the if-then-else block
+        int jmp_entry = @2.begin.line;
         itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
     }
     ;
@@ -207,10 +206,6 @@ construct_else :
         itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
     }
     ;
-
-
-
-
 
 l_expr : a_expr op_rel a_expr
         {
@@ -242,9 +237,9 @@ assignment : T_ID arr_index T_ASSIGN a_expr
         temp = make_temp (symtab, sym->datatype);
         // TASK: Complete the four TBD_ARG in both calls to itab_instruction_add.
         if (sym->datatype == DTYPE_INT)
-          itab_instruction_add (itab, OP_CAST_FLOAT2INT, temp->addr, src_temp->addr, NOARG);
+          itab_instruction_add (itab, OP_CAST_FLOAT2INT, temp->addr, UNUSED_ARG, src_temp->addr);
         else
-          itab_instruction_add (itab, OP_CAST_INT2FLOAT, temp->addr, src_temp->addr, NOARG);
+          itab_instruction_add (itab, OP_CAST_INT2FLOAT, temp->addr, UNUSED_ARG, src_temp->addr);
 
         // Final store to the array will use the intermediate variable resulting from the cast.
         src_temp = temp;
@@ -539,4 +534,3 @@ expr_list : expr_list  T_COMMA a_expr
 void yy::simple_parser::error (const yy::location & l, const std::string & s) {
 	std::cerr << "Simple Parser error at " << l << " : " << s << std::endl;
 }
-
