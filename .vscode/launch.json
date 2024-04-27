@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/briannapatten/Spring2024_Classwork/ppl/ppl4",
+      "program": "/Users/briannapatten/Spring2024_Classwork/ppl/ppl4/build/Debug/outDebug"
+    }
+  ]
+}
