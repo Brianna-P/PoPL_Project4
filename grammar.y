@@ -59,9 +59,9 @@ extern yy::location loc;
 %token T_LS_BRACKET
 %token T_RS_BRACKET
 
-%token <string>		T_ID ;
-%token <int>		T_INTEGER ;
-%token <float>		T_FLOAT;
+%token <string>   T_ID ;
+%token <int>    T_INTEGER ;
+%token <float>    T_FLOAT;
 
 %type <symbol_t*> assignment;
 %type <symbol_t*> varref;
@@ -532,5 +532,6 @@ expr_list : expr_list  T_COMMA a_expr
 %%
 
 void yy::simple_parser::error (const yy::location & l, const std::string & s) {
-	std::cerr << "Simple Parser error at " << l << " : " << s << std::endl;
+  std::cerr << "Simple Parser error at " << l << " : " << s << std::endl;
 }
+
