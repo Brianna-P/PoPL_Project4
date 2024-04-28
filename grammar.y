@@ -168,44 +168,40 @@ construct_if :
     T_LPAR
     l_expr
     T_RPAR
-    stmt
     {
-        // First semantic action: Generate a jump-if-zero (OP_JZ) to the end of the if-then-else block
-        int jump_dst = INSTRUCTION_NEXT;
-        itab_instruction_add(itab, OP_JZ, NOARG, NOARG, TBD_ARG);
-        @$.begin.line = INSTRUCTION_LAST;
+        // First semantic action
+      // DEFINE_ME = change to proper values.
+      // TBDARG = Should modify the corresponding address (.addr#) in a later semantic action.
+      // NOARG = No need to change.
+      itab_instruction_add (itab, OP_JZ, $3->addr, NOARG, TBDARG);
+      @$.begin.line = INSTRUCTION_LAST; // INSTRUCTION_NEXT or INSTRUCTION_LAST
     }
     stmt
     {
-        // Second semantic action: Generate an unconditional jump to the end of the if-then-else block
-        int jump_dst = INSTRUCTION_NEXT;
-        itab_instruction_add(itab, OP_JMP, NOARG, NOARG, TBD_ARG);
-        // Set the destination jump that terminates the if-then-else block
-        int jmp_entry = @6.begin.line;
-        itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
+        // Second semantic action
+      itab_instruction_add (itab, OP_JMP, NOARG, NOARG, TBDARG);
+      @$.begin.line =  INSTRUCTION_LAST; // INSTRUCTION_NEXT or INSTRUCTION_LAST
+      int jmp_entry = @5.begin.line;
+      itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT; // INSTRUCTION_NEXT or INSTRUCTION_LAST
     }
     construct_else
     {
-        // Third semantic action: Set the destination jump that terminates the if-then-else block
-        int jmp_entry = @2.begin.line;
-        itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
+        // Third semantic action
+      int jmp_entry = @7.begin.line;
+      itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT; // INSTRUCTION_NEXT or INSTRUCTION_LAST
     }
     ;
 
 construct_else :
-    T_ELSE
-    {
-        // First semantic action: Generate a jump to skip the "if" block when the condition is true
-        itab_instruction_add(itab, OP_JMP, NOARG, NOARG, TBD_ARG);
+      T_ELSE 
+      { 
         @$.begin.line = INSTRUCTION_NEXT;
-    }
-    stmt
-    {
-        // Second semantic action: Set the destination jump that continues execution after the "if" block
-        int jmp_entry = @2.begin.line;
-        itab->tab[jmp_entry]->addr3 = INSTRUCTION_NEXT;
-    }
+      }
+      stmt 
+    | 
+
     ;
+
 
 l_expr : a_expr op_rel a_expr
         {
